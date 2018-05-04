@@ -14,6 +14,10 @@
 
 #include <Arduino.h>
 
+// Hardware definitions:
+#define RESETPIN		2
+
+// Command definitions:
 #define Write_Address                 0x3E //i2c address
 #define CNTRBIT                       0x00 //followed by command bytes
 #define CNTRBIT_CO                    0x80 //followed by 1 command byte
@@ -49,23 +53,28 @@
 #define INTERNAL_OSC_FREQ_F1          0x02 //F2~0: adjust internal OSC frequency for FR frequency.
 #define INTERNAL_OSC_FREQ_F2          0x04 //F2~0: adjust internal OSC frequency for FR frequency.
 #define INTERNAL_OSC_FREQ_BS          0x08 //BS=1:1/4 bias (BS=0:1/5 bias)
-#define POWER_ICON_BOST_CONTR_Bon     0x04 //Ion: ICON display on/off
-#define POWER_ICON_BOST_CONTR_Ion     0x08 //Bon: set booster circuit on/off
+#define POWER_ICON_BOST_CONTR_Bon     0x04 //Bon: set booster circuit on/off
+#define POWER_ICON_BOST_CONTR_Ion     0x08 //Ion: ICON display on/off
 #define FOLLOWER_CONTROL_Rab0         0x01 //Rab2~0: select follower amplified ratio
 #define FOLLOWER_CONTROL_Rab1         0x02 //Rab2~0: select follower amplified ratio
 #define FOLLOWER_CONTROL_Rab2         0x04 //Rab2~0: select follower amplified ratio
 #define FOLLOWER_CONTROL_Fon          0x08 //Fon: set follower circuit on/off
 
-#define CONTRAST_MAX                  0x3F //limit range max value (0x00 - 0x3F)
-#define CONTRAST_MIN                  0x10 //limit range min value (0x00 - 0x3F)
 #define WRITE_DELAY_MS                  30 //see data sheet
 #define HOME_CLEAR_DELAY_MS			  1200 //see data sheet
+
+// Various defines
+#define DISPLAY_3V	0x00
+#define DISPLAY_5V 	0x01
+#define DISPLAY_1LINE	0x00
+#define DISPLAY_2LINE	0x01
+
 
 class LCD_ST7032: public Print 
 {
 	public:
 		LCD_ST7032(); 
-		void begin();
+		void begin(uint8_t voltage, uint8_t lines);
 		void clear();
 		void home();
 		void display();
@@ -79,12 +88,15 @@ class LCD_ST7032: public Print
 		void adjcontrast(int val);
 		uint8_t getcontrast();
 		virtual size_t write(uint8_t chr);
+		void reset();
 	
 	protected:
 		void Write_Instruction(uint8_t cmd);
 		void Write_Data(uint8_t data);
 		uint8_t displayOnOffSetting = (DISPLAY_ON_OFF | DISPLAY_ON_OFF_D);
-		uint8_t contrast = 0x18;
+		uint8_t displayFunctionsetCMD = (FUNCTION_SET | FUNCTION_SET_DL | FUNCTION_SET_IS);
+		uint8_t displayPowerctrlCMD = POWER_ICON_BOST_CONTR;
+		uint8_t contrast = 8;
 };	
 
 #endif

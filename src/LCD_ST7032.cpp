@@ -27,13 +27,23 @@ LCD_ST7032::LCD_ST7032()
 { 
 } 
 
-void LCD_ST7032::begin() 
+void LCD_ST7032::begin(uint8_t voltage, uint8_t lines) 
 {
 	Wire.begin();
-	delay(100);
-    Write_Instruction(FUNCTION_SET | FUNCTION_SET_DL | FUNCTION_SET_N | FUNCTION_SET_IS);
+	pinMode(RESETPIN, OUTPUT);
+	reset();
+	delay(250);
+	if(voltage == DISPLAY_3V)
+		displayPowerctrlCMD |= POWER_ICON_BOST_CONTR_Bon;
+	else
+		displayPowerctrlCMD = (displayPowerctrlCMD & ~(POWER_ICON_BOST_CONTR_Bon));
+	if(lines == DISPLAY_1LINE)
+		displayFunctionsetCMD = ((displayFunctionsetCMD | FUNCTION_SET_DH & ~(FUNCTION_SET_N)));
+	else
+		displayFunctionsetCMD = (displayFunctionsetCMD & ~(FUNCTION_SET_DH) | FUNCTION_SET_N);
+    Write_Instruction(displayFunctionsetCMD);
     Write_Instruction(INTERNAL_OSC_FREQ | INTERNAL_OSC_FREQ_BS | INTERNAL_OSC_FREQ_F2);
-    Write_Instruction(POWER_ICON_BOST_CONTR | POWER_ICON_BOST_CONTR_Ion);
+    //Write_Instruction(displayPowerctrlCMD);
     setcontrast(contrast);
     Write_Instruction(FOLLOWER_CONTROL | FOLLOWER_CONTROL_Fon | FOLLOWER_CONTROL_Rab2);
     delay(300);
@@ -124,10 +134,9 @@ void LCD_ST7032::noBlink() //stop cursor block blink
 
 void LCD_ST7032::setcontrast(int val) 
 {
-	if (val > CONTRAST_MAX) val = CONTRAST_MIN;
-	else if (val < CONTRAST_MIN) val = CONTRAST_MAX;
+	val = val & B00111111;
 	Write_Instruction(CONTRAST_SET | (val & B00001111));
-	Write_Instruction((val >> 4) | POWER_ICON_BOST_CONTR | POWER_ICON_BOST_CONTR_Bon);
+	Write_Instruction((val >> 4) | displayPowerctrlCMD);
 	contrast = val;
 }
 
@@ -139,4 +148,11 @@ void LCD_ST7032::adjcontrast(int val)
 uint8_t LCD_ST7032::getcontrast() 
 {
 	return contrast;
+}
+
+void LCD_ST7032::reset()
+{
+	digitalWrite(RESETPIN, LOW);
+	delay(100);
+	digitalWrite(RESETPIN, HIGH);
 }

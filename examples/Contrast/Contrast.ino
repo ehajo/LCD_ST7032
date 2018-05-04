@@ -1,9 +1,9 @@
 //-------------------------------------------------------------------------------------------
-// Tested Module    : ERC1602-4, EASTRISING TECHNOLOGY CO,.LTD.
+// Tested Module    : eHaJo COG-Display
 // Drive IC         : ST7032
 // INTERFACE        : I2C
-// VDD              : 2.7V-5.5V
-// Tested with MCU	: Arduino Uno, Attiny85@1mhz(5.0V), Attiny85@8mhz(5.0V) and ESP8266(3.3V)
+// VDD              : 3.3V-5.0V
+// Tested with MCU	: Arduino Uno, Atmega328P-PU
 //-------------------------------------------------------------------------------------------
 
 #include <LCD_ST7032.h>
@@ -16,8 +16,8 @@ boolean lastButtonState = 1;
 void setup() {
   pinMode(contrastButtonPin, INPUT);
   digitalWrite(contrastButtonPin, HIGH);
-  lcd.begin();
-  lcd.setcontrast(24); //contrast value range is 0-63, try 25@5V or 50@3.3V as a starting value
+  lcd.begin(DISPLAY_5V, DISPLAY_2LINE); // DISPLAY_5V or DISPLAY_3V | DISPLAY_2LINE or DISPLAY_1LINE
+  lcd.setcontrast(8); //contrast value range is 0-63, try 8@5V or 30@3.3V as a starting value
 }
 
 void loop() {
